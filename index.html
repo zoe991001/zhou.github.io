@@ -56,6 +56,35 @@ body{
   max-width:100vw;
 }
 img{max-width:100%;display:block;user-select:none;-webkit-user-select:none;-webkit-user-drag:none;-webkit-touch-callout:none}
+
+/* ===== 全局自定义光标 ===== */
+@media (hover: hover) and (pointer: fine){
+  *{cursor:none !important}
+  .cursor-dot{
+    position:fixed;top:0;left:0;width:8px;height:8px;
+    background:#578098;border-radius:50%;
+    pointer-events:none;z-index:9999;
+    mix-blend-mode:multiply;
+    transform:translate(-50%,-50%);
+    transition:width .2s ease,height .2s ease,background .2s ease;
+  }
+  .cursor-ring{
+    position:fixed;top:0;left:0;width:36px;height:36px;
+    border:2px solid rgba(87,128,152,.5);border-radius:50%;
+    pointer-events:none;z-index:9998;
+    transform:translate(-50%,-50%);
+    transition:width .3s ease,height .3s ease,border-color .3s ease,background .3s ease,opacity .3s ease;
+  }
+  .cursor-ring.hover{
+    width:56px;height:56px;
+    background:rgba(87,128,152,.12);
+    border-color:rgba(87,128,152,.7);
+  }
+  .cursor-dot.hover{
+    width:6px;height:6px;
+    background:#ff6f7d;
+  }
+}
 a{color:inherit;text-decoration:none}
 ul{list-style:none}
 section{scroll-margin-top:90px}
@@ -394,7 +423,8 @@ section{scroll-margin-top:90px}
 }
 .filter-btn:hover{border-color:var(--rose);color:var(--rose)}
 .filter-btn.active{background:var(--rose);color:#fff;border-color:var(--rose);box-shadow:0 6px 18px rgba(255,111,125,.35)}
-.works-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.works-grid{position:relative}
+.work-card.masonry{position:absolute;left:0;top:0}
 /* 作品区缩小左右边距，让4列卡片保持3列时的大小 */
 .works .wrap{padding:0 clamp(24px,3vw,60px)}
 /* 通用卡片 */
@@ -404,12 +434,12 @@ section{scroll-margin-top:90px}
   background:#fff;
 }
 .work-card:hover{transform:translateY(-6px);box-shadow:0 24px 50px rgba(111,128,146,.20)}
-/* 图片区 */
-.wc-img-wrap{position:relative;overflow:hidden;aspect-ratio:1/1;background:#f5f5f5}
-.wc-img-wrap img{width:100%;height:100%;object-fit:cover;transition:transform .5s ease,opacity .4s ease}
+/* 图片区 - PC端按图片原始比例显示 */
+.wc-img-wrap{position:relative;overflow:hidden;background:#f5f5f5}
+.wc-img-wrap img{width:100%;height:auto;display:block;transition:transform .5s ease,opacity .4s ease}
 .work-card:hover .wc-img-wrap img{transform:scale(1.05)}
 .work-card.hover-swap:hover .wc-img-wrap img{transform:none}
-.wc-img2{position:absolute;inset:0;opacity:0}
+.wc-img2{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0}
 .work-card.hover-swap:hover .wc-img-wrap .wc-img{opacity:0}
 .work-card.hover-swap:hover .wc-img-wrap .wc-img2{opacity:1}
 /* 卡片下方信息栏（图1样式） */
@@ -757,7 +787,10 @@ html.js .reveal.in{opacity:1;transform:none;filter:blur(0)}
 }
 @media (max-width:560px){
   .skill-list{grid-template-columns:1fr}
-  .works-grid{grid-template-columns:1fr 1fr;gap:16px}
+  .works-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .work-card.masonry{position:static;left:auto;top:auto;width:auto}
+  .wc-img-wrap{aspect-ratio:1/1}
+  .wc-img-wrap img{height:100%;object-fit:cover}
   .works-title{font-size:38px}
   .about-meta{grid-template-columns:1fr}
   .contact{min-height:auto;padding:80px 0 60px}
@@ -777,6 +810,10 @@ html.js .reveal.in{opacity:1;transform:none;filter:blur(0)}
 </style>
 </head>
 <body>
+
+<!-- 自定义光标 -->
+<div class="cursor-dot" id="cursorDot"></div>
+<div class="cursor-ring" id="cursorRing"></div>
 
 <!-- ===== 导航栏 ===== -->
 <header class="nav" id="nav">
@@ -853,7 +890,7 @@ html.js .reveal.in{opacity:1;transform:none;filter:blur(0)}
       <div class="about-mid">
         <h3>嗨，我是 Zoe —— 一名电商视觉设计师</h3>
         <p>专注电商设计多年，擅长从品牌调性出发，把“货架逻辑”与“视觉美感”结合起来，让每一张图既好看、又真的能卖货。</p>
-        <p>服务过美妆、服饰、食品、3C 等多个类目，累计输出数百套首页视觉、详情页与营销活动页。我相信：好的电商设计，是用创意让人停留，用信息让人下单。</p>
+        <p>服务过3C、户外、母婴、宠物、服饰等多个类目，累计输出数百套首页视觉、详情页与营销活动页。我相信：好的电商设计，是用创意让人停留，用信息让人下单。</p>
         <div class="about-stats">
           <div class="stat-card"><b class="count-up" data-target="8">0</b><span>年设计经验</span></div>
           <div class="stat-card"><b class="count-up" data-target="300" data-suffix="+">0</b><span>交付案例</span></div>
@@ -1054,6 +1091,58 @@ html.js .reveal.in{opacity:1;transform:none;filter:blur(0)}
 </div>
 
 <script>
+// ===== 全局自定义光标 =====
+(function initCustomCursor(){
+  if(!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+  const dot = document.getElementById('cursorDot');
+  const ring = document.getElementById('cursorRing');
+  if(!dot || !ring) return;
+
+  let mouseX = -100, mouseY = -100;
+  let ringX = -100, ringY = -100;
+
+  // 鼠标移动：圆点即时跟随
+  document.addEventListener('mousemove', e => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    dot.style.left = mouseX + 'px';
+    dot.style.top = mouseY + 'px';
+  });
+
+  // 圆环：Lerp缓动跟随
+  function animateRing(){
+    ringX += (mouseX - ringX) * 0.15;
+    ringY += (mouseY - ringY) * 0.15;
+    ring.style.left = ringX + 'px';
+    ring.style.top = ringY + 'px';
+    requestAnimationFrame(animateRing);
+  }
+  requestAnimationFrame(animateRing);
+
+  // 悬停态：监听所有可交互元素
+  const hoverSelector = 'a, button, .work-card, .add-card, .filter-btn, .lb-nav, .lb-close, .cmp-thumb-group, .admin-btn, input, select, textarea, .float-tag';
+  document.querySelectorAll(hoverSelector).forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      ring.classList.add('hover');
+      dot.classList.add('hover');
+    });
+    el.addEventListener('mouseleave', () => {
+      ring.classList.remove('hover');
+      dot.classList.remove('hover');
+    });
+  });
+
+  // 离开窗口时隐藏
+  document.addEventListener('mouseleave', () => {
+    dot.style.opacity = '0';
+    ring.style.opacity = '0';
+  });
+  document.addEventListener('mouseenter', () => {
+    dot.style.opacity = '1';
+    ring.style.opacity = '1';
+  });
+})();
+
 // ===== 最优先：admin检测（确保任何运行时错误都不影响后台入口） =====
 (function(){
   if(new URLSearchParams(location.search).get('admin') === '1'){
@@ -1073,8 +1162,6 @@ document.addEventListener('dragstart', e => {
 document.addEventListener('keydown', e => {
   // 禁止 Ctrl+S 保存
   if((e.ctrlKey || e.metaKey) && e.key === 's'){ e.preventDefault(); return false; }
-  // 禁止 F12 开发者工具（仅提示，无法完全阻止）
-  if(e.key === 'F12'){ e.preventDefault(); return false; }
 });
 // 给所有图片设置 draggable=false
 document.querySelectorAll('img').forEach(img => {
@@ -1214,73 +1301,70 @@ document.querySelectorAll('.reveal').forEach(el => io.observe(el));
     card.style.opacity = '1';
     card.style.transform = 'translateY(0) scale(1)';
 
-    // 等卡片入场完成（0.9s）后开始红框1
+    // ===== 红框1（左栏）：卡片入场后立马依次展示，流畅衔接 =====
+    // 名字：0.2秒后渐显
     setTimeout(() => {
-      // 红框1：名字渐显
       setTrans(name, 'opacity 0.5s ease');
       name.style.opacity = '1';
+    }, 200);
 
-      // 名字完成后日期渐显
-      setTimeout(() => {
-        setTrans(birth, 'opacity 0.5s ease');
-        birth.style.opacity = '1';
-      }, 500);
+    // 日期：名字完成后立马接上
+    setTimeout(() => {
+      setTrans(birth, 'opacity 0.5s ease');
+      birth.style.opacity = '1';
+    }, 500);
 
-      // 日期后头像：圆角矩形变圆形 + 弹跳
-      setTimeout(() => {
-        setTrans(avatar, 'border-radius 0.6s ease, transform 0.7s cubic-bezier(.34,1.56,.64,1), opacity 0.4s ease');
-        avatar.style.opacity = '1';
-        avatar.style.transform = 'scale(1)';
-        avatar.style.borderRadius = '50%';
-        // 光环同步
-        setTrans(avatarRing, 'opacity 0.5s ease');
-        avatarRing.style.opacity = '1';
-      }, 1000);
+    // 头像：日期完成后立马接上
+    setTimeout(() => {
+      setTrans(avatar, 'border-radius 0.6s ease, transform 0.7s cubic-bezier(.34,1.56,.64,1), opacity 0.4s ease');
+      avatar.style.opacity = '1';
+      avatar.style.transform = 'scale(1)';
+      avatar.style.borderRadius = '50%';
+      setTrans(avatarRing, 'opacity 0.5s ease');
+      avatarRing.style.opacity = '1';
+    }, 1000);
 
-      // 头像后标签浮动出现
-      setTimeout(() => {
-        tags.forEach((tag, i) => {
-          setTimeout(() => {
-            setTrans(tag, 'opacity 0.4s ease');
-            tag.style.opacity = '1';
-          }, i * 200);
-        });
-        requestAnimationFrame(runFloatTags);
-      }, 1700);
-
-      // 红框1完成后（约2.1s）→ 红框2上浮+渐显
-      setTimeout(() => {
-        setTrans(mid, 'opacity 0.8s cubic-bezier(.22,1,.36,1), transform 0.8s cubic-bezier(.22,1,.36,1)');
-        mid.style.opacity = '1';
-        mid.style.transform = 'translateY(0)';
-        runCountUps();
-
-        // 红框2完成后 → 红框3
+    // 标签：头像完成后立马接上
+    setTimeout(() => {
+      tags.forEach((tag, i) => {
         setTimeout(() => {
-          // 整个右栏渐显
-          setTrans(right, 'opacity 0.6s ease');
-          right.style.opacity = '1';
+          setTrans(tag, 'opacity 0.4s ease');
+          tag.style.opacity = '1';
+        }, i * 150);
+      });
+      requestAnimationFrame(runFloatTags);
+    }, 1700);
 
-          // 绿框：主要设计技能标题先渐显
-          setTimeout(() => {
-            setTrans(skillTitle, 'opacity 0.5s ease');
-            skillTitle.style.opacity = '1';
-          }, 300);
+    // ===== 红框2（中栏）：左栏完成后立马接上 =====
+    setTimeout(() => {
+      setTrans(mid, 'opacity 0.8s cubic-bezier(.22,1,.36,1), transform 0.8s cubic-bezier(.22,1,.36,1)');
+      mid.style.opacity = '1';
+      mid.style.transform = 'translateY(0)';
+      runCountUps();
 
-          // 红框：标题完成后，进度条依次渐显 + 生长
-          setTimeout(() => {
-            skillBars.forEach((bar, i) => {
-              setTimeout(() => {
-                setTrans(bar, 'opacity 0.4s ease');
-                bar.style.opacity = '1';
-              }, i * 120);
-            });
-            growSkillBars();
-          }, 800);
+      // ===== 红框3（右栏）：中栏完成后立马接上 =====
+      setTimeout(() => {
+        setTrans(right, 'opacity 0.6s ease');
+        right.style.opacity = '1';
+
+        // 绿框：技能标题
+        setTimeout(() => {
+          setTrans(skillTitle, 'opacity 0.5s ease');
+          skillTitle.style.opacity = '1';
+        }, 300);
+
+        // 红框：进度条
+        setTimeout(() => {
+          skillBars.forEach((bar, i) => {
+            setTimeout(() => {
+              setTrans(bar, 'opacity 0.4s ease');
+              bar.style.opacity = '1';
+            }, i * 100);
+          });
+          growSkillBars();
         }, 700);
-      }, 2100);
-
-    }, 900);
+      }, 800);
+    }, 2200);
   }
 
   // IntersectionObserver 触发
@@ -1629,6 +1713,14 @@ function renderWorks(cat){
       adminEdit.classList.add('show');
     });
   });
+  // PC端瀑布流布局（等图片加载完）
+  if(window.innerWidth > 560){
+    worksGrid.style.height = 'auto';
+    waitForImages(() => layoutMasonry());
+  } else {
+    worksGrid.style.height = 'auto';
+    worksGrid.querySelectorAll('.work-card').forEach(c => c.classList.remove('masonry'));
+  }
 }
 
 // 分类按钮
@@ -1638,6 +1730,60 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.classList.add('active');
     renderWorks(btn.dataset.cat);
   });
+});
+
+// ===== PC端瀑布流布局 =====
+const MASONRY_COLS = 4;
+const MASONRY_GAP = 20;
+function layoutMasonry(){
+  if(window.innerWidth <= 560) return; // 移动端用grid
+  const cards = worksGrid.querySelectorAll('.work-card');
+  if(cards.length === 0) return;
+  const containerWidth = worksGrid.offsetWidth;
+  const colWidth = (containerWidth - MASONRY_GAP * (MASONRY_COLS - 1)) / MASONRY_COLS;
+  const colHeights = new Array(MASONRY_COLS).fill(0);
+
+  cards.forEach((card, i) => {
+    card.classList.add('masonry');
+    card.style.width = colWidth + 'px';
+    // 找最短列
+    let minCol = 0;
+    for(let c = 1; c < MASONRY_COLS; c++){
+      if(colHeights[c] < colHeights[minCol]) minCol = c;
+    }
+    card.style.left = (minCol * (colWidth + MASONRY_GAP)) + 'px';
+    card.style.top = colHeights[minCol] + 'px';
+    colHeights[minCol] += card.offsetHeight + MASONRY_GAP;
+  });
+  // 设置容器高度
+  worksGrid.style.height = Math.max(...colHeights) - MASONRY_GAP + 'px';
+}
+// 等所有图片加载完再布局
+function waitForImages(callback){
+  const imgs = worksGrid.querySelectorAll('img');
+  let loaded = 0;
+  const total = imgs.length;
+  if(total === 0){ callback(); return; }
+  imgs.forEach(img => {
+    if(img.complete && img.naturalHeight > 0){
+      loaded++;
+      if(loaded === total) callback();
+    } else {
+      img.onload = img.onerror = () => {
+        loaded++;
+        if(loaded === total) callback();
+      };
+    }
+  });
+  // 超时兜底
+  setTimeout(callback, 3000);
+}
+let masonryResizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(masonryResizeTimer);
+  masonryResizeTimer = setTimeout(() => {
+    if(window.innerWidth > 560) layoutMasonry();
+  }, 200);
 });
 
 // ===== 灯箱（图2样式：左大图+右侧栏缩略图） =====
@@ -1682,6 +1828,7 @@ function openWork(id){
     lightbox.classList.add('open');
     lockBody();
   }
+  lbPushHistory(); // 移动端返回按钮支持
 }
 function updateLb(){
   lbImg.src = lbWork.images[lbIndex];
@@ -1699,8 +1846,60 @@ function lbPrev(){ if(lbIndex>0){lbIndex--;lbImgWrap.classList.remove('zoomed');
 function lbNext(){ if(lbIndex<lbWork.images.length-1){lbIndex++;lbImgWrap.classList.remove('zoomed');lightbox.classList.remove('img-zoomed');updateLb();} }
 document.getElementById('lbPrev').addEventListener('click', e => { e.stopPropagation(); lbPrev(); });
 document.getElementById('lbNext').addEventListener('click', e => { e.stopPropagation(); lbNext(); });
-function closeLb(){ lightbox.classList.remove('open','img-zoomed'); unlockBody(); lbImgWrap.classList.remove('zoomed'); }
+function closeLb(){ lightbox.classList.remove('open','img-zoomed'); unlockBody(); lbImgWrap.classList.remove('zoomed'); lbPopHistory(); }
 document.getElementById('lbClose').addEventListener('click', closeLb);
+
+// ===== 移动端：左右滑动切换图片 =====
+let lbTouchStartX = 0;
+let lbTouchStartY = 0;
+let lbTouchMoved = false;
+lbImgWrap.addEventListener('touchstart', e => {
+  if(lightbox.classList.contains('img-zoomed')) return; // 放大状态不拦截
+  lbTouchStartX = e.touches[0].clientX;
+  lbTouchStartY = e.touches[0].clientY;
+  lbTouchMoved = false;
+}, {passive:true});
+lbImgWrap.addEventListener('touchmove', e => {
+  if(lightbox.classList.contains('img-zoomed')) return;
+  const dx = Math.abs(e.touches[0].clientX - lbTouchStartX);
+  const dy = Math.abs(e.touches[0].clientY - lbTouchStartY);
+  if(dx > 30 && dx > dy) lbTouchMoved = true;
+}, {passive:true});
+lbImgWrap.addEventListener('touchend', e => {
+  if(lightbox.classList.contains('img-zoomed')) return;
+  if(!lbTouchMoved) return;
+  const dx = e.changedTouches[0].clientX - lbTouchStartX;
+  if(dx > 50) lbPrev(); // 右滑→上一张
+  else if(dx < -50) lbNext(); // 左滑→下一张
+  lbTouchMoved = false;
+});
+
+// ===== 移动端：返回按钮退出灯箱 =====
+let lbHistoryPushed = false;
+function lbPushHistory(){
+  if(!lbHistoryPushed){
+    history.pushState({lightbox:true}, '');
+    lbHistoryPushed = true;
+  }
+}
+function lbPopHistory(){
+  if(lbHistoryPushed){
+    lbHistoryPushed = false;
+    history.back();
+  }
+}
+window.addEventListener('popstate', e => {
+  if(lightbox.classList.contains('open')){
+    lightbox.classList.remove('open','img-zoomed');
+    unlockBody();
+    lbImgWrap.classList.remove('zoomed');
+    lbHistoryPushed = false;
+  }
+  if(compareLb.classList.contains('open')){
+    closeCompareLb();
+    lbHistoryPushed = false;
+  }
+});
 
 // 大图点击放大/还原：同步切换 img-zoomed 类控制整体滚动
 lbImgWrap.addEventListener('click', e => {
@@ -1789,7 +1988,7 @@ function cmpPrevGroup(){ if(cmpGroupIndex>0){cmpGroupIndex--;updateCompare();} }
 function cmpNextGroup(){ if(cmpGroupIndex<cmpGroups.length-1){cmpGroupIndex++;updateCompare();} }
 document.getElementById('cmpPrev').addEventListener('click', e => { e.stopPropagation(); cmpPrevGroup(); });
 document.getElementById('cmpNext').addEventListener('click', e => { e.stopPropagation(); cmpNextGroup(); });
-function closeCmp(){ compareLb.classList.remove('open'); unlockBody(); }
+function closeCmp(){ compareLb.classList.remove('open'); unlockBody(); lbPopHistory(); }
 document.getElementById('cmpClose').addEventListener('click', closeCmp);
 
 function setCmpMode(mode){
