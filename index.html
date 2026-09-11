@@ -9,22 +9,22 @@
 /* ===== 本地字体 ===== */
 @font-face{
   font-family:'OPlusSans3';
-  src:url('fonts/OPlusSans3-Regular.woff2') format('woff2');
+  src:url('fonts/OPlusSans3-Regular.ttf') format('truetype');
   font-weight:400;font-style:normal;font-display:swap;
 }
 @font-face{
   font-family:'OPlusSans3Bold';
-  src:url('fonts/OPlusSans3-Bold.woff2') format('woff2');
+  src:url('fonts/OPlusSans3-Bold.ttf') format('truetype');
   font-style:normal;font-display:swap;
 }
 @font-face{
   font-family:'ImpactLocal';
-  src:url('fonts/impact.woff2') format('woff2');
+  src:url('fonts/impact.ttf') format('truetype');
   font-weight:400;font-style:normal;font-display:swap;
 }
 @font-face{
   font-family:'XiMaiTi';
-  src:url('fonts/ZiZhiQuXiMaiTi.woff2') format('woff2');
+  src:url('fonts/ZiZhiQuXiMaiTi.ttf') format('truetype');
   font-weight:400;font-style:normal;font-display:swap;
 }
 </style>
@@ -60,29 +60,34 @@ img{max-width:100%;display:block;user-select:none;-webkit-user-select:none;-webk
 /* ===== 全局自定义光标 ===== */
 @media (hover: hover) and (pointer: fine){
   *{cursor:none !important}
+  /* 出错时恢复系统光标 */
+  html.cursor-error, html.cursor-error *{cursor:auto !important}
+  html.cursor-error .cursor-dot{display:none !important}
   .cursor-dot{
-    position:fixed;top:0;left:0;width:8px;height:8px;
-    background:#578098;border-radius:50%;
+    position:fixed;top:0;left:0;width:22px;height:22px;
+    background:#4a5568;
+    -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M2 2 L2 20 L6 15 L9 21 L11 20 L8 14 L14 14 Z'/%3E%3C/svg%3E") no-repeat 0 0 / contain;
+    mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M2 2 L2 20 L6 15 L9 21 L11 20 L8 14 L14 14 Z'/%3E%3C/svg%3E") no-repeat 0 0 / contain;
     pointer-events:none;z-index:9999;
-    mix-blend-mode:multiply;
-    transform:translate(-50%,-50%);
-    transition:width .2s ease,height .2s ease,background .2s ease;
+    transform-origin:center center;
+    transition:transform .12s ease, background .2s ease, -webkit-mask .2s ease, mask .2s ease;
   }
-  .cursor-ring{
-    position:fixed;top:0;left:0;width:36px;height:36px;
-    border:2px solid rgba(87,128,152,.5);border-radius:50%;
-    pointer-events:none;z-index:9998;
-    transform:translate(-50%,-50%);
-    transition:width .3s ease,height .3s ease,border-color .3s ease,background .3s ease,opacity .3s ease;
-  }
-  .cursor-ring.hover{
-    width:56px;height:56px;
-    background:rgba(87,128,152,.12);
-    border-color:rgba(87,128,152,.7);
-  }
+  .cursor-ring{display:none !important}
+  /* 悬停可点击元素：变成蓝色圆点 */
   .cursor-dot.hover{
-    width:6px;height:6px;
-    background:#ff6f7d;
+    background:#4a5568;
+    width:12px;height:12px;
+    border-radius:50%;
+    -webkit-mask:none;
+    mask:none;
+    transform:translate(-50%,-50%);
+  }
+  /* 点击时：居中缩小 */
+  .cursor-dot.clicking{
+    transform:scale(0.75);
+  }
+  .cursor-dot.hover.clicking{
+    transform:translate(-50%,-50%) scale(0.75);
   }
 }
 a{color:inherit;text-decoration:none}
@@ -424,7 +429,7 @@ section{scroll-margin-top:90px}
 .filter-btn:hover{border-color:var(--rose);color:var(--rose)}
 .filter-btn.active{background:var(--rose);color:#fff;border-color:var(--rose);box-shadow:0 6px 18px rgba(255,111,125,.35)}
 .works-grid{position:relative}
-.work-card.masonry{position:absolute;left:0;top:0}
+.work-card.masonry, .add-card.masonry{position:absolute;left:0;top:0;transition:left .3s ease, top .3s ease}
 /* 作品区缩小左右边距，让4列卡片保持3列时的大小 */
 .works .wrap{padding:0 clamp(24px,3vw,60px)}
 /* 通用卡片 */
@@ -435,13 +440,18 @@ section{scroll-margin-top:90px}
 }
 .work-card:hover{transform:translateY(-6px);box-shadow:0 24px 50px rgba(111,128,146,.20)}
 /* 图片区 - PC端按图片原始比例显示 */
-.wc-img-wrap{position:relative;overflow:hidden;background:#f5f5f5}
-.wc-img-wrap img{width:100%;height:auto;display:block;transition:transform .5s ease,opacity .4s ease}
+.wc-img-wrap{position:relative;overflow:hidden;background:linear-gradient(110deg,#eef2f5 8%,#f5f7f9 18%,#eef2f5 33%);background-size:200% 100%;animation:shimmer 1.5s infinite;min-height:200px}
+@keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
+.wc-img-wrap img.loaded{animation:none}
+.wc-img-wrap img{width:100%;height:auto;display:block;transition:transform .5s ease,opacity .5s ease}
 .work-card:hover .wc-img-wrap img{transform:scale(1.05)}
 .work-card.hover-swap:hover .wc-img-wrap img{transform:none}
-.wc-img2{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0}
+.wc-img2{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0 !important;z-index:2}
 .work-card.hover-swap:hover .wc-img-wrap .wc-img{opacity:0}
-.work-card.hover-swap:hover .wc-img-wrap .wc-img2{opacity:1}
+.work-card.hover-swap:hover .wc-img-wrap .wc-img2{opacity:1 !important}
+/* 图片懒加载淡入效果 */
+img.wc-img{opacity:0;transition:opacity .5s ease}
+img.wc-img.loaded{opacity:1}
 /* 卡片下方信息栏（图1样式） */
 .wc-info{padding:14px 16px 16px}
 .wc-info h4{font-size:16px;font-weight:700;color:var(--ink);margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -665,13 +675,15 @@ section{scroll-margin-top:90px}
 .admin-login-box button{width:100%;padding:12px;border:0;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:8px}
 #adminLoginBtn{background:var(--rose);color:#fff}
 .admin-cancel{background:#f0f0f0;color:var(--ink)!important}
-.admin-bar{position:fixed;top:0;left:0;right:0;z-index:150;background:rgba(40,48,56,.95);color:#fff;padding:10px 24px;display:none;align-items:center;gap:12px;flex-wrap:wrap}
+.admin-bar{position:fixed;top:0;left:0;right:0;z-index:150;background:rgba(40,48,56,.95);color:#fff;padding:8px 16px;display:none;align-items:center;gap:8px;flex-wrap:wrap}
 .admin-bar.show{display:flex}
-.admin-bar-title{font-size:14px;font-weight:600;margin-right:auto}
-.admin-btn{padding:7px 16px;border:0;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;color:#fff}
-#addWorkBtn{background:#4a90d9}
-.admin-export{background:#2a9d5c}
-.admin-exit{background:#888}
+.admin-bar-title{font-size:13px;font-weight:600;margin-right:auto;background:linear-gradient(90deg,#4787CE 0%,#52A8C8 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;white-space:nowrap}
+.admin-btn{padding:8px 14px;border:0;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;color:#fff;white-space:nowrap;text-shadow:0 1px 2px rgba(0,0,0,.3)}
+#addWorkBtn{background:#3a7bc8}
+#textMgrBtn{background:#5a4bd6}
+#exportTextsBtn{background:#00a085}
+.admin-export{background:#238a4e}
+.admin-exit{background:#666}
 .admin-edit{position:fixed;inset:0;z-index:300;background:rgba(30,36,44,.9);display:none;align-items:center;justify-content:center;padding:20px}
 .admin-edit.show{display:flex}
 .admin-edit-box{background:#fff;border-radius:20px;padding:28px;width:min(480px,92vw);max-height:90vh;overflow-y:auto}
@@ -697,14 +709,18 @@ body.admin-mode .work-card::before{content:"✎ 编辑";position:absolute;top:8p
 body.admin-mode .work-card::after{content:"× 删除";position:absolute;top:8px;left:8px;z-index:10;background:#e74c3c;color:#fff;font-size:11px;padding:3px 8px;border-radius:6px;cursor:pointer}
 .add-card{
   display:none;
-  aspect-ratio:1/1;
+  width:100%;
+  min-height:180px;
   border:2.5px dashed rgba(111,128,146,.35);
   border-radius:16px;
   align-items:center;
   justify-content:center;
+  flex-direction:column;
+  gap:8px;
   cursor:pointer;
   transition:all .3s ease;
   background:rgba(255,255,255,.5);
+  box-sizing:border-box;
 }
 body.admin-mode .add-card{display:flex}
 .add-card:hover{
@@ -712,8 +728,9 @@ body.admin-mode .add-card{display:flex}
   background:rgba(255,111,125,.08);
   transform:translateY(-4px);
 }
-.add-card svg{width:42px;height:42px;color:rgba(111,128,146,.5);transition:color .3s ease}
+.add-card svg{width:36px;height:36px;color:rgba(111,128,146,.5);transition:color .3s ease}
 .add-card:hover svg{color:var(--rose)}
+.add-card span{font-size:13px;color:rgba(111,128,146,.6);font-family:var(--font)}
 
 /* ---------- 滚动入场：柔焦渐显 ---------- */
 html.js .reveal{opacity:0;transform:translateY(22px);filter:blur(7px);transition:opacity .8s ease,transform .8s ease,filter .8s ease}
@@ -788,9 +805,15 @@ html.js .reveal.in{opacity:1;transform:none;filter:blur(0)}
 @media (max-width:560px){
   .skill-list{grid-template-columns:1fr}
   .works-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-  .work-card.masonry{position:static;left:auto;top:auto;width:auto}
+  .work-card.masonry, .add-card.masonry{position:static;left:auto;top:auto;width:auto}
+  .add-card{min-height:140px}
+  .add-card svg{width:28px;height:28px}
+  .add-card span{font-size:11px}
   .wc-img-wrap{aspect-ratio:1/1}
   .wc-img-wrap img{height:100%;object-fit:cover}
+  /* 移动端禁用hover切换第二张图，避免触摸后两张图叠加 */
+  .work-card.hover-swap:hover .wc-img-wrap .wc-img{opacity:1}
+  .work-card.hover-swap:hover .wc-img-wrap .wc-img2{opacity:0}
   .works-title{font-size:38px}
   .about-meta{grid-template-columns:1fr}
   .contact{min-height:auto;padding:80px 0 60px}
@@ -818,12 +841,12 @@ html.js .reveal.in{opacity:1;transform:none;filter:blur(0)}
 <!-- ===== 导航栏 ===== -->
 <header class="nav" id="nav">
   <div class="nav-inner">
-    <a href="#home" class="brand">ZHOU.</a>
+    <a href="#home" class="brand" data-text="nav_brand">ZHOU.</a>
     <ul class="nav-links">
-      <li><a href="#home">首页</a></li>
-      <li><a href="#works">作品</a></li>
-      <li><a href="#about">关于我</a></li>
-      <li><a href="#contact">联系</a></li>
+      <li><a href="#home" data-text="nav_home">首页</a></li>
+      <li><a href="#works" data-text="nav_works">作品</a></li>
+      <li><a href="#about" data-text="nav_about">关于我</a></li>
+      <li><a href="#contact" data-text="nav_contact">联系</a></li>
     </ul>
     <button class="burger" id="burger" aria-label="菜单" aria-expanded="false">
       <span></span><span></span><span></span>
@@ -831,27 +854,27 @@ html.js .reveal.in{opacity:1;transform:none;filter:blur(0)}
   </div>
 </header>
 <div class="mobile-menu" id="mobileMenu">
-  <a href="#home">首页</a>
-  <a href="#works">作品</a>
-  <a href="#about">关于我</a>
-  <a href="#contact">联系</a>
+  <a href="#home" data-text="nav_home">首页</a>
+  <a href="#works" data-text="nav_works">作品</a>
+  <a href="#about" data-text="nav_about">关于我</a>
+  <a href="#contact" data-text="nav_contact">联系</a>
 </div>
 
 <!-- ===== 首屏 ===== -->
 <section class="hero" id="home">
   <div class="hero-inner">
     <div class="hero-copy">
-      <div class="reveal-mask"><div class="hero-year">2026</div></div>
-      <div class="reveal-mask"><div class="hero-title">PERSONAL PORTFOLIO</div></div>
+      <div class="reveal-mask"><div class="hero-year" data-text="hero_year">2026</div></div>
+      <div class="reveal-mask"><div class="hero-title" data-text="hero_title">PERSONAL PORTFOLIO</div></div>
       <div class="hero-tagrow">
         <div class="design-tag">
           <span class="corner tl"></span>
           <span class="corner tr"></span>
           <span class="corner bl"></span>
           <span class="corner br"></span>
-          <span class="design-text">电商设计</span>
+          <span class="design-text" data-text="hero_design_tag">电商设计</span>
         </div>
-        <span class="hero-sub">个人作品集</span>
+        <span class="hero-sub" data-text="hero_sub">个人作品集</span>
       </div>
     </div>
     <div class="hero-art">
@@ -862,9 +885,9 @@ html.js .reveal.in{opacity:1;transform:none;filter:blur(0)}
   <div class="hero-from">
     <span class="from-group">
       <img src="环绕圆点.png" alt="" class="from-ring">
-      <span class="from-label">FROM</span>
+      <span class="from-label" data-text="hero_from_label">FROM</span>
     </span>
-    <span class="from-year">2018 - NOW</span>
+    <span class="from-year" data-text="hero_from_year">2018 - NOW</span>
   </div>
 </section>
 
@@ -875,65 +898,65 @@ html.js .reveal.in{opacity:1;transform:none;filter:blur(0)}
       <div class="about-glow" id="aboutGlow"></div>
       <!-- 左栏：头像 -->
       <div class="about-left">
-        <h2 class="about-name">周指华</h2>
+        <h2 class="about-name" data-text="about_name">周指华</h2>
         <div class="about-avatar-wrap">
           <div class="about-avatar-ring"></div>
           <div class="about-avatar">
-            <img src="avatar.png" alt="周指华头像">
+            <img src="avatar.png" alt="周指华头像" loading="lazy" decoding="async">
           </div>
-          <span class="float-tag tag-top">🚀 转化率提升</span>
-          <span class="float-tag tag-bottom">💡 创意驱动</span>
+          <span class="float-tag tag-top" data-text="about_tag_top">🚀 转化率提升</span>
+          <span class="float-tag tag-bottom" data-text="about_tag_bottom">💡 创意驱动</span>
         </div>
-        <div class="about-birth">1999.10.01</div>
+        <div class="about-birth" data-text="about_birth">1999.10.01</div>
       </div>
       <!-- 中栏：自我介绍 -->
       <div class="about-mid">
-        <h3>嗨，我是 Zoe —— 一名电商视觉设计师</h3>
-        <p>专注电商设计多年，擅长从品牌调性出发，把“货架逻辑”与“视觉美感”结合起来，让每一张图既好看、又真的能卖货。</p>
-        <p>服务过3C、户外、母婴、宠物、服饰等多个类目，累计输出数百套首页视觉、详情页与营销活动页。我相信：好的电商设计，是用创意让人停留，用信息让人下单。</p>
+        <h3 data-text="about_hello">嗨，我是 Zoe —— 一名电商视觉设计师</h3>
+        <p data-text="about_desc1">专注电商设计多年，擅长从品牌调性出发，把“货架逻辑”与“视觉美感”结合起来，让每一张图既好看、又真的能卖货。</p>
+        <p data-text="about_desc2">服务过3C、户外、母婴、宠物、服饰等多个类目，累计输出数百套首页视觉、详情页与营销活动页。我相信：好的电商设计，是用创意让人停留，用信息让人下单。</p>
         <div class="about-stats">
-          <div class="stat-card"><b class="count-up" data-target="8">0</b><span>年设计经验</span></div>
-          <div class="stat-card"><b class="count-up" data-target="300" data-suffix="+">0</b><span>交付案例</span></div>
-          <div class="stat-card"><b class="count-up" data-target="6" data-suffix="+">0</b><span>服务类目</span></div>
+          <div class="stat-card"><b class="count-up" data-target="8">0</b><span data-text="about_stat1_label">年设计经验</span></div>
+          <div class="stat-card"><b class="count-up" data-target="300" data-suffix="+">0</b><span data-text="about_stat2_label">交付案例</span></div>
+          <div class="stat-card"><b class="count-up" data-target="6" data-suffix="+">0</b><span data-text="about_stat3_label">服务类目</span></div>
         </div>
       </div>
       <!-- 右栏：技能进度条 -->
       <div class="about-right">
-        <div class="skill-title-bar">主要设计技能</div>
+        <div class="skill-title-bar" data-text="skill_title">主要设计技能</div>
         <div class="skill-bars">
           <div class="skill-bar">
-            <img src="skill-06.png" alt="" class="sicon-img">
+            <img src="skill-06.png" alt="" class="sicon-img" loading="lazy" decoding="async">
             <div class="skill-bar-body">
               <div class="skill-bar-track"><div class="skill-bar-fill c1" data-w="72"></div></div>
-              <div class="skill-bar-label">AIGC</div>
+              <div class="skill-bar-label" data-text="skill1">AIGC</div>
             </div>
           </div>
           <div class="skill-bar">
-            <img src="skill-07.png" alt="" class="sicon-img">
+            <img src="skill-07.png" alt="" class="sicon-img" loading="lazy" decoding="async">
             <div class="skill-bar-body">
               <div class="skill-bar-track"><div class="skill-bar-fill c2" data-w="85"></div></div>
-              <div class="skill-bar-label">Adobe Photoshop</div>
+              <div class="skill-bar-label" data-text="skill2">Adobe Photoshop</div>
             </div>
           </div>
           <div class="skill-bar">
-            <img src="skill-08.png" alt="" class="sicon-img">
+            <img src="skill-08.png" alt="" class="sicon-img" loading="lazy" decoding="async">
             <div class="skill-bar-body">
               <div class="skill-bar-track"><div class="skill-bar-fill c3" data-w="80"></div></div>
-              <div class="skill-bar-label">Adobe Illustrator</div>
+              <div class="skill-bar-label" data-text="skill3">Adobe Illustrator</div>
             </div>
           </div>
           <div class="skill-bar">
-            <img src="skill-04.png" alt="" class="sicon-img">
+            <img src="skill-04.png" alt="" class="sicon-img" loading="lazy" decoding="async">
             <div class="skill-bar-body">
               <div class="skill-bar-track"><div class="skill-bar-fill c4" data-w="68"></div></div>
-              <div class="skill-bar-label">Cinema 4D</div>
+              <div class="skill-bar-label" data-text="skill4">Cinema 4D</div>
             </div>
           </div>
           <div class="skill-bar">
-            <img src="skill-05.png" alt="" class="sicon-img">
+            <img src="skill-05.png" alt="" class="sicon-img" loading="lazy" decoding="async">
             <div class="skill-bar-body">
               <div class="skill-bar-track"><div class="skill-bar-fill c5" data-w="70"></div></div>
-              <div class="skill-bar-label">Keyshot</div>
+              <div class="skill-bar-label" data-text="skill5">Keyshot</div>
             </div>
           </div>
         </div>
@@ -943,10 +966,10 @@ html.js .reveal.in{opacity:1;transform:none;filter:blur(0)}
   <div class="scroll-hint">
     <div class="scroll-cuboid">
       <div class="scroll-cuboid-inner" id="scrollCuboid">
-        <div class="scroll-cuboid-face f1">向下滚动浏览作品 ↓</div>
-        <div class="scroll-cuboid-face f2">向下滚动浏览作品 ↓</div>
-        <div class="scroll-cuboid-face f3">向下滚动浏览作品 ↓</div>
-        <div class="scroll-cuboid-face f4">向下滚动浏览作品 ↓</div>
+        <div class="scroll-cuboid-face f1" data-text="scroll_hint">向下滚动浏览作品 ↓</div>
+        <div class="scroll-cuboid-face f2" data-text="scroll_hint">向下滚动浏览作品 ↓</div>
+        <div class="scroll-cuboid-face f3" data-text="scroll_hint">向下滚动浏览作品 ↓</div>
+        <div class="scroll-cuboid-face f4" data-text="scroll_hint">向下滚动浏览作品 ↓</div>
       </div>
     </div>
   </div>
@@ -955,17 +978,17 @@ html.js .reveal.in{opacity:1;transform:none;filter:blur(0)}
 <!-- ===== 作品 ===== -->
 <section class="section works" id="works">
   <div class="works-header">
-    <img src="red-line.png" alt="" class="works-redline">
-    <h2 class="works-title">我的作品</h2>
+    <img src="red-line.png" alt="" class="works-redline" loading="lazy" decoding="async">
+    <h2 class="works-title" data-text="works_title">我的作品</h2>
   </div>
   <div class="wrap">
     <div class="filter-bar">
-      <button class="filter-btn active" data-cat="全部">全部</button>
-      <button class="filter-btn" data-cat="主图/详情">主图/详情</button>
-      <button class="filter-btn" data-cat="AIGC">AIGC</button>
-      <button class="filter-btn" data-cat="渲染">渲染</button>
-      <button class="filter-btn" data-cat="精修">精修</button>
-      <button class="filter-btn" data-cat="其他">其他</button>
+      <button class="filter-btn active" data-cat="全部" data-text="cat_all">全部</button>
+      <button class="filter-btn" data-cat="主图/详情" data-text="cat_main">主图/详情</button>
+      <button class="filter-btn" data-cat="AIGC" data-text="cat_aigc">AIGC</button>
+      <button class="filter-btn" data-cat="渲染" data-text="cat_render">渲染</button>
+      <button class="filter-btn" data-cat="精修" data-text="cat_retouch">精修</button>
+      <button class="filter-btn" data-cat="其他" data-text="cat_other">其他</button>
     </div>
     <div class="works-grid" id="worksGrid"></div>
   </div>
@@ -974,21 +997,21 @@ html.js .reveal.in{opacity:1;transform:none;filter:blur(0)}
 <!-- ===== 联系 ===== -->
 <section class="section contact" id="contact">
   <div class="contact-inner">
-    <img src="rocket.png" alt="骑火箭的女孩" class="contact-rocket">
-    <h2 class="contact-thanks">感谢您的耐心观看</h2>
-    <p class="contact-sub">期待您的联系</p>
+    <img src="rocket.png" alt="骑火箭的女孩" class="contact-rocket" loading="lazy" decoding="async">
+    <h2 class="contact-thanks" data-text="contact_thanks">感谢您的耐心观看</h2>
+    <p class="contact-sub" data-text="contact_sub">期待您的联系</p>
     <div class="contact-info">
       <div class="contact-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-        <span>13246603132</span>
+        <span data-text="contact_phone">13246603132</span>
       </div>
       <div class="contact-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
-        <span>13246603132</span>
+        <span data-text="contact_wechat">13246603132</span>
       </div>
       <div class="contact-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-        <span>847735071@qq.com</span>
+        <span data-text="contact_email">847735071@qq.com</span>
       </div>
     </div>
   </div>
@@ -996,7 +1019,7 @@ html.js .reveal.in{opacity:1;transform:none;filter:blur(0)}
 
 <!-- ===== 页脚 ===== -->
 <footer class="footer">
-  © 2026 <b>ZHOU.</b> 周指华个人作品集 · 用心设计每一个像素
+  <span data-text="footer">© 2026 <b>ZHOU.</b> 周指华个人作品集 · 用心设计每一个像素</span>
 </footer>
 
 <!-- ===== 灯箱（图2样式：左大图+右侧栏） ===== -->
@@ -1055,8 +1078,24 @@ html.js .reveal.in{opacity:1;transform:none;filter:blur(0)}
 <div class="admin-bar" id="adminBar">
   <span class="admin-bar-title">⚙ 管理模式</span>
   <button class="admin-btn" id="addWorkBtn">+ 添加作品</button>
+  <button class="admin-btn" id="textMgrBtn">📝 文字管理</button>
+  <button class="admin-btn" id="exportTextsBtn">📄 导出文字清单</button>
   <button class="admin-btn admin-export" id="exportBtn">导出发布版</button>
   <button class="admin-btn admin-exit" id="exitAdminBtn">退出</button>
+</div>
+
+<!-- ===== 文字管理弹窗 ===== -->
+<div class="admin-edit" id="textMgrPanel">
+  <div class="admin-edit-box" style="max-height:80vh;overflow-y:auto;">
+    <h3>📝 文字管理</h3>
+    <p style="font-size:13px;color:#578098;margin-bottom:15px;">修改后点击保存，页面文字会立即更新。改完文案后记得点"导出文字清单"再运行字体子集化脚本。</p>
+    <div id="textMgrFields"></div>
+    <div class="admin-edit-actions">
+      <button class="admin-cancel" id="textMgrSaveBtn">保存文字</button>
+      <button class="admin-cancel" id="textMgrResetBtn">恢复默认</button>
+      <button class="admin-cancel" id="textMgrCancelBtn">关闭</button>
+    </div>
+  </div>
 </div>
 
 <!-- ===== 作品编辑弹窗 ===== -->
@@ -1091,55 +1130,157 @@ html.js .reveal.in{opacity:1;transform:none;filter:blur(0)}
 </div>
 
 <script>
+// ===== 网站文字配置（必须在最前面，在动画初始化之前渲染文字） =====
+const DEFAULT_SITE_TEXTS = {
+  nav_brand: 'ZHOU.', nav_home: '首页', nav_works: '作品', nav_about: '关于我', nav_contact: '联系',
+  hero_year: '2026', hero_title: 'PERSONAL PORTFOLIO', hero_design_tag: '电商设计', hero_sub: '个人作品集', hero_from_label: 'FROM', hero_from_year: '2018 - NOW',
+  about_name: '周指华', about_tag_top: '🚀 转化率提升', about_tag_bottom: '💡 创意驱动', about_birth: '1999.10.01',
+  about_hello: '嗨，我是 Zoe —— 一名电商视觉设计师',
+  about_desc1: '专注电商设计多年，擅长从品牌调性出发，把"货架逻辑"与"视觉美感"结合起来，让每一张图既好看、又真的能卖货。',
+  about_desc2: '服务过3C、户外、母婴、宠物、服饰等多个类目，累计输出数百套首页视觉、详情页与营销活动页。我相信：好的电商设计，是用创意让人停留，用信息让人下单。',
+  about_stat1_num: '8', about_stat1_label: '年设计经验', about_stat2_num: '300', about_stat2_label: '交付案例', about_stat3_num: '6', about_stat3_label: '服务类目',
+  skill_title: '主要设计技能', skill1: 'AIGC', skill2: 'Adobe Photoshop', skill3: 'Adobe Illustrator', skill4: 'Cinema 4D', skill5: 'Keyshot',
+  scroll_hint: '向下滚动浏览作品 ↓',
+  works_title: '我的作品', cat_all: '全部', cat_main: '主图/详情', cat_aigc: 'AIGC', cat_render: '渲染', cat_retouch: '精修', cat_other: '其他',
+  contact_thanks: '感谢您的耐心观看', contact_sub: '期待您的联系', contact_phone: '13246603132', contact_wechat: '13246603132', contact_email: '847735071@qq.com',
+  footer: '© 2026 <b>ZHOU.</b> 周指华个人作品集 · 用心设计每一个像素',
+};
+let SITE_TEXTS = {...DEFAULT_SITE_TEXTS};
+function loadSiteTexts(){ 
+  try { 
+    const s = localStorage.getItem('zhou_site_texts'); 
+    if(s) SITE_TEXTS = {...DEFAULT_SITE_TEXTS, ...JSON.parse(s)}; 
+  } catch(e){} 
+}
+function saveSiteTexts(){ localStorage.setItem('zhou_site_texts', JSON.stringify(SITE_TEXTS)); }
+function resetSiteTexts(){ SITE_TEXTS = {...DEFAULT_SITE_TEXTS}; localStorage.removeItem('zhou_site_texts'); }
+const HTML_TEXT_KEYS = ['footer'];
+function renderSiteTexts(){
+  document.querySelectorAll('[data-text]').forEach(el => {
+    const key = el.getAttribute('data-text');
+    if(SITE_TEXTS[key] !== undefined){
+      if(HTML_TEXT_KEYS.includes(key)) el.innerHTML = SITE_TEXTS[key];
+      else el.textContent = SITE_TEXTS[key];
+    }
+  });
+  document.querySelectorAll('.count-up').forEach((el, i) => {
+    const keys = ['about_stat1_num','about_stat2_num','about_stat3_num'];
+    if(keys[i] && SITE_TEXTS[keys[i]]) el.setAttribute('data-target', SITE_TEXTS[keys[i]]);
+  });
+}
+function exportAllTexts(){
+  let allText = '';
+  // 1. 收集SITE_TEXTS里的所有文字
+  Object.values(SITE_TEXTS).forEach(t => allText += t + ' ');
+  // 2. 收集WORKS里的所有文字
+  if(typeof WORKS !== 'undefined') WORKS.forEach(w => {
+    allText += w.title + ' ' + w.cat + ' ' + (w.type||'') + ' ' + w.year + ' ';
+    if(w.images) w.images.forEach(img => allText += img + ' ');
+    if(w.cover) allText += w.cover + ' ';
+  });
+  // 3. 收集页面上所有可见元素的文字（确保不遗漏）
+  document.querySelectorAll('h1,h2,h3,h4,h5,p,span,a,button,label,option,placeholder,title').forEach(el => {
+    if(el.textContent) allText += el.textContent + ' ';
+    if(el.value) allText += el.value + ' ';
+    if(el.placeholder) allText += el.placeholder + ' ';
+  });
+  // 4. 收集input的placeholder
+  document.querySelectorAll('input,textarea').forEach(el => {
+    if(el.placeholder) allText += el.placeholder + ' ';
+  });
+  // 5. 额外补充常用字符（数字、字母、标点），确保不会缺失
+  allText += "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+  allText += "，。！？、；：“”‘’（）【】《》—…·～！@#￥%……&*（）——+={}|[]:\";'<>?,./";
+  allText += " \n\r\t";
+  // 去重
+  return [...new Set(allText.split(''))].join('');
+}
+loadSiteTexts();
+renderSiteTexts(); // 在所有动画初始化之前渲染文字
+
 // ===== 全局自定义光标 =====
 (function initCustomCursor(){
   if(!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
   const dot = document.getElementById('cursorDot');
-  const ring = document.getElementById('cursorRing');
-  if(!dot || !ring) return;
+  if(!dot) return;
 
   let mouseX = -100, mouseY = -100;
-  let ringX = -100, ringY = -100;
+  let dotX = -100, dotY = -100;
+  let rafRunning = false;
 
-  // 鼠标移动：圆点即时跟随
+  // 容错：任何JS错误时恢复系统光标
+  function restoreCursor(){
+    document.documentElement.classList.add('cursor-error');
+  }
+  window.addEventListener('error', restoreCursor);
+  window.addEventListener('unhandledrejection', restoreCursor);
+
+  // 鼠标移动：直接更新位置（不用rAF节流，确保不卡顿）
   document.addEventListener('mousemove', e => {
-    mouseX = e.clientX;
-    mouseY = e.clientY;
-    dot.style.left = mouseX + 'px';
-    dot.style.top = mouseY + 'px';
+    try {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      if(!rafRunning){
+        rafRunning = true;
+        requestAnimationFrame(updateCursor);
+      }
+    } catch(err) {
+      // 出错时恢复系统光标
+      restoreCursor();
+    }
   });
 
-  // 圆环：Lerp缓动跟随
-  function animateRing(){
-    ringX += (mouseX - ringX) * 0.15;
-    ringY += (mouseY - ringY) * 0.15;
-    ring.style.left = ringX + 'px';
-    ring.style.top = ringY + 'px';
-    requestAnimationFrame(animateRing);
+  function updateCursor(){
+    try {
+      // 箭头：快速跟随（lerp 0.5）
+      dotX += (mouseX - dotX) * 0.5;
+      dotY += (mouseY - dotY) * 0.5;
+      dot.style.left = dotX + 'px';
+      dot.style.top = dotY + 'px';
+      // 如果鼠标还在移动，继续下一帧
+      if(Math.abs(mouseX - dotX) > 0.5 || Math.abs(mouseY - dotY) > 0.5){
+        requestAnimationFrame(updateCursor);
+      } else {
+        rafRunning = false;
+      }
+    } catch(err) {
+      document.body.style.cursor = 'auto';
+      dot.style.display = 'none';
+      rafRunning = false;
+    }
   }
-  requestAnimationFrame(animateRing);
 
-  // 悬停态：监听所有可交互元素
+  // 悬停态：用事件委托，支持动态添加的元素
   const hoverSelector = 'a, button, .work-card, .add-card, .filter-btn, .lb-nav, .lb-close, .cmp-thumb-group, .admin-btn, input, select, textarea, .float-tag';
-  document.querySelectorAll(hoverSelector).forEach(el => {
-    el.addEventListener('mouseenter', () => {
-      ring.classList.add('hover');
-      dot.classList.add('hover');
-    });
-    el.addEventListener('mouseleave', () => {
-      ring.classList.remove('hover');
-      dot.classList.remove('hover');
-    });
+  document.addEventListener('mouseover', e => {
+    try {
+      if(e.target.closest(hoverSelector)){
+        dot.classList.add('hover');
+      }
+    } catch(err) {}
+  });
+  document.addEventListener('mouseout', e => {
+    try {
+      if(e.target.closest(hoverSelector)){
+        dot.classList.remove('hover');
+      }
+    } catch(err) {}
+  });
+
+  // 点击时：稍微变小然后回归原样
+  document.addEventListener('mousedown', () => {
+    try { dot.classList.add('clicking'); } catch(err) {}
+  });
+  document.addEventListener('mouseup', () => {
+    try { dot.classList.remove('clicking'); } catch(err) {}
   });
 
   // 离开窗口时隐藏
   document.addEventListener('mouseleave', () => {
-    dot.style.opacity = '0';
-    ring.style.opacity = '0';
+    try { dot.style.opacity = '0'; } catch(err) {}
   });
   document.addEventListener('mouseenter', () => {
-    dot.style.opacity = '1';
-    ring.style.opacity = '1';
+    try { dot.style.opacity = '1'; } catch(err) {}
   });
 })();
 
@@ -1168,6 +1309,19 @@ document.querySelectorAll('img').forEach(img => {
   img.setAttribute('draggable', 'false');
   img.addEventListener('contextmenu', e => e.preventDefault());
 });
+
+// 图片懒加载淡入效果
+function initLazyImages(){
+  document.querySelectorAll('img[loading="lazy"]').forEach(img => {
+    if(img.complete && img.naturalWidth > 0){
+      img.classList.add('loaded');
+    } else {
+      img.addEventListener('load', () => img.classList.add('loaded'), {once:true});
+      img.addEventListener('error', () => img.classList.add('loaded'), {once:true});
+    }
+  });
+}
+initLazyImages();
 
 // 导航栏滚动态
 const nav = document.getElementById('nav');
@@ -1658,7 +1812,7 @@ function renderWorks(cat){
   worksGrid.innerHTML = list.map((w,i)=>{
     const hoverSwap = isCompare ? 'hover-swap' : '';
     const coverImg = w.cover || w.images[0];
-    const secondImg = w.images[1] ? `<img class="wc-img2" src="${w.images[1]}" alt="">` : '';
+    const secondImg = (isCompare && w.images[1]) ? `<img class="wc-img2" src="${w.images[1]}" alt="" loading="lazy" decoding="async">` : '';
     const typeText = w.type || w.cat;
     // AIGC/精修卡片：图1样式，无标题，只有分类+年份
     const infoHtml = isCompare ? `
@@ -1677,7 +1831,7 @@ function renderWorks(cat){
       </div>`;
     return `<div class="work-card reveal ${hoverSwap}" data-id="${w.id}" style="transition-delay:${i*0.05}s">
       <div class="wc-img-wrap">
-        <img class="wc-img" src="${coverImg}" alt="${w.title}">
+        <img class="wc-img" src="${coverImg}" alt="${w.title}" loading="lazy" decoding="async">
         ${secondImg}
       </div>
       ${infoHtml}
@@ -1687,6 +1841,7 @@ function renderWorks(cat){
   if(document.body.classList.contains('admin-mode') && cat !== '全部'){
     worksGrid.innerHTML += `<div class="add-card" data-cat="${cat}" title="添加${cat}作品">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+      <span>添加${cat}作品</span>
     </div>`;
   }
   // 重新绑定入场动画观察
@@ -1713,13 +1868,36 @@ function renderWorks(cat){
       adminEdit.classList.add('show');
     });
   });
-  // PC端瀑布流布局（等图片加载完）
+  // PC端瀑布流布局：每张图片加载完就立即重新布局，图片逐个淡入
   if(window.innerWidth > 560){
     worksGrid.style.height = 'auto';
-    waitForImages(() => layoutMasonry());
+    // 先布局一次（用最小高度占位）
+    layoutMasonry();
+    // 每张图片加载完后重新布局
+    worksGrid.querySelectorAll('img.wc-img').forEach(img => {
+      if(img.complete && img.naturalWidth > 0){
+        img.classList.add('loaded');
+        layoutMasonry();
+      } else {
+        img.addEventListener('load', () => {
+          img.classList.add('loaded');
+          layoutMasonry();
+        }, {once:true});
+        img.addEventListener('error', () => {
+          img.classList.add('loaded');
+          layoutMasonry();
+        }, {once:true});
+      }
+    });
   } else {
     worksGrid.style.height = 'auto';
-    worksGrid.querySelectorAll('.work-card').forEach(c => c.classList.remove('masonry'));
+    worksGrid.querySelectorAll('.work-card').forEach(c => {
+      c.classList.remove('masonry');
+      c.style.position = '';
+      c.style.left = '';
+      c.style.top = '';
+      c.style.width = '';
+    });
   }
 }
 
@@ -1755,6 +1933,21 @@ function layoutMasonry(){
     card.style.top = colHeights[minCol] + 'px';
     colHeights[minCol] += card.offsetHeight + MASONRY_GAP;
   });
+  
+  // 添加按钮也参与瀑布流，放在最短列
+  const addCard = worksGrid.querySelector('.add-card');
+  if(addCard){
+    addCard.classList.add('masonry');
+    addCard.style.width = colWidth + 'px';
+    let minCol = 0;
+    for(let c = 1; c < MASONRY_COLS; c++){
+      if(colHeights[c] < colHeights[minCol]) minCol = c;
+    }
+    addCard.style.left = (minCol * (colWidth + MASONRY_GAP)) + 'px';
+    addCard.style.top = colHeights[minCol] + 'px';
+    colHeights[minCol] += addCard.offsetHeight + MASONRY_GAP;
+  }
+  
   // 设置容器高度
   worksGrid.style.height = Math.max(...colHeights) - MASONRY_GAP + 'px';
 }
@@ -1782,7 +1975,19 @@ let masonryResizeTimer;
 window.addEventListener('resize', () => {
   clearTimeout(masonryResizeTimer);
   masonryResizeTimer = setTimeout(() => {
-    if(window.innerWidth > 560) layoutMasonry();
+    if(window.innerWidth > 560){
+      layoutMasonry();
+    } else {
+      // 移动端：清除瀑布流内联样式，恢复grid
+      worksGrid.style.height = 'auto';
+      worksGrid.querySelectorAll('.work-card').forEach(c => {
+        c.classList.remove('masonry');
+        c.style.position = '';
+        c.style.left = '';
+        c.style.top = '';
+        c.style.width = '';
+      });
+    }
   }, 200);
 });
 
@@ -1835,7 +2040,7 @@ function updateLb(){
   lbTitle.textContent = lbWork.title;
   lbCounter.textContent = `${lbIndex+1}/${lbWork.images.length}`;
   lbThumbs.innerHTML = lbWork.images.map((src,i)=>
-    `<img src="${src}" class="${i===lbIndex?'active':''}" data-i="${i}" alt="">`
+    `<img src="${src}" class="${i===lbIndex?'active':''}" data-i="${i}" alt="" loading="lazy" decoding="async">`
   ).join('');
   lbThumbs.querySelectorAll('img').forEach(t => {
     t.setAttribute('draggable', 'false');
@@ -1846,7 +2051,7 @@ function lbPrev(){ if(lbIndex>0){lbIndex--;lbImgWrap.classList.remove('zoomed');
 function lbNext(){ if(lbIndex<lbWork.images.length-1){lbIndex++;lbImgWrap.classList.remove('zoomed');lightbox.classList.remove('img-zoomed');updateLb();} }
 document.getElementById('lbPrev').addEventListener('click', e => { e.stopPropagation(); lbPrev(); });
 document.getElementById('lbNext').addEventListener('click', e => { e.stopPropagation(); lbNext(); });
-function closeLb(){ lightbox.classList.remove('open','img-zoomed'); unlockBody(); lbImgWrap.classList.remove('zoomed'); lbPopHistory(); }
+function closeLb(){ lightbox.classList.remove('open','img-zoomed'); unlockBody(); lbImgWrap.classList.remove('zoomed'); if(lbHistoryPushed){lbHistoryPushed=false;history.back();} setTimeout(()=>window.dispatchEvent(new Event('resize')), 100); }
 document.getElementById('lbClose').addEventListener('click', closeLb);
 
 // ===== 移动端：左右滑动切换图片 =====
@@ -1896,7 +2101,8 @@ window.addEventListener('popstate', e => {
     lbHistoryPushed = false;
   }
   if(compareLb.classList.contains('open')){
-    closeCompareLb();
+    compareLb.classList.remove('open');
+    unlockBody();
     lbHistoryPushed = false;
   }
 });
@@ -1975,7 +2181,7 @@ function updateCompare(){
   setTimeout(fitCompareStage, 120);
   cmpThumbs.innerHTML = cmpGroups.map((grp,i)=>
     `<div class="cmp-thumb-group ${i===cmpGroupIndex?'active':''}" data-i="${i}">
-      <img src="${grp[0]}" alt=""><img src="${grp[1]}" alt="">
+      <img src="${grp[0]}" alt="" loading="lazy" decoding="async"><img src="${grp[1]}" alt="" loading="lazy" decoding="async">
     </div>`
   ).join('');
   cmpThumbs.querySelectorAll('.cmp-thumb-group').forEach(t => {
@@ -1988,7 +2194,7 @@ function cmpPrevGroup(){ if(cmpGroupIndex>0){cmpGroupIndex--;updateCompare();} }
 function cmpNextGroup(){ if(cmpGroupIndex<cmpGroups.length-1){cmpGroupIndex++;updateCompare();} }
 document.getElementById('cmpPrev').addEventListener('click', e => { e.stopPropagation(); cmpPrevGroup(); });
 document.getElementById('cmpNext').addEventListener('click', e => { e.stopPropagation(); cmpNextGroup(); });
-function closeCmp(){ compareLb.classList.remove('open'); unlockBody(); lbPopHistory(); }
+function closeCmp(){ compareLb.classList.remove('open'); unlockBody(); if(lbHistoryPushed){lbHistoryPushed=false;history.back();} setTimeout(()=>window.dispatchEvent(new Event('resize')), 100); }
 document.getElementById('cmpClose').addEventListener('click', closeCmp);
 
 function setCmpMode(mode){
@@ -2050,6 +2256,7 @@ document.addEventListener('touchmove', e => { if(cmpDragging && e.touches[0]) se
 document.addEventListener('touchend', () => { cmpDragging = false; });
 
 // 初始渲染：等IndexedDB加载完成后再渲染
+// renderSiteTexts() 已在前面调用，避免打断动画
 openDB().then(() => loadWorksFromDB()).then(() => {
   renderWorks('全部');
 }).catch(err => {
@@ -2087,6 +2294,72 @@ document.getElementById('exitAdminBtn').addEventListener('click', () => {
   adminBar.classList.remove('show');
   renderWorks(currentCat); // 重新渲染隐藏加号卡片
   location.search = '';
+});
+
+// ===== 文字管理 =====
+const textMgrPanel = document.getElementById('textMgrPanel');
+const textMgrFields = document.getElementById('textMgrFields');
+const TEXT_LABELS = {
+  nav_brand:'导航 - Logo', nav_home:'导航 - 首页', nav_works:'导航 - 作品', nav_about:'导航 - 关于我', nav_contact:'导航 - 联系',
+  hero_year:'首屏 - 年份', hero_title:'首屏 - 标题', hero_design_tag:'首屏 - 设计标签', hero_sub:'首屏 - 副标题', hero_from_label:'首屏 - FROM', hero_from_year:'首屏 - 年份范围',
+  about_name:'关于 - 姓名', about_tag_top:'关于 - 标签1', about_tag_bottom:'关于 - 标签2', about_birth:'关于 - 生日',
+  about_hello:'关于 - 打招呼', about_desc1:'关于 - 介绍1', about_desc2:'关于 - 介绍2',
+  about_stat1_label:'关于 - 统计1', about_stat2_label:'关于 - 统计2', about_stat3_label:'关于 - 统计3',
+  about_stat1_num:'关于 - 数字1', about_stat2_num:'关于 - 数字2', about_stat3_num:'关于 - 数字3',
+  skill_title:'关于 - 技能标题', skill1:'技能1', skill2:'技能2', skill3:'技能3', skill4:'技能4', skill5:'技能5',
+  scroll_hint:'滚动提示',
+  works_title:'作品 - 标题', cat_all:'分类 - 全部', cat_main:'分类 - 主图/详情', cat_aigc:'分类 - AIGC', cat_render:'分类 - 渲染', cat_retouch:'分类 - 精修', cat_other:'分类 - 其他',
+  contact_thanks:'联系 - 感谢', contact_sub:'联系 - 副标题', contact_phone:'联系 - 电话', contact_wechat:'联系 - 微信', contact_email:'联系 - 邮箱',
+  footer:'页脚',
+};
+
+function openTextMgr(){
+  textMgrFields.innerHTML = '';
+  Object.keys(DEFAULT_SITE_TEXTS).forEach(key => {
+    const label = TEXT_LABELS[key] || key;
+    const isLong = SITE_TEXTS[key].length > 30;
+    const field = document.createElement('label');
+    field.style.display = 'block';
+    field.style.marginBottom = '10px';
+    field.innerHTML = `<span style="font-size:13px;color:#4787CE;font-weight:600;display:block;margin-bottom:4px;">${label}</span>` +
+      (isLong 
+        ? `<textarea data-key="${key}" rows="2" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;resize:vertical;">${SITE_TEXTS[key]}</textarea>`
+        : `<input type="text" data-key="${key}" value="${SITE_TEXTS[key].replace(/"/g,'&quot;')}" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;">`
+      );
+    textMgrFields.appendChild(field);
+  });
+  textMgrPanel.classList.add('show');
+}
+document.getElementById('textMgrBtn').addEventListener('click', openTextMgr);
+document.getElementById('textMgrCancelBtn').addEventListener('click', () => textMgrPanel.classList.remove('show'));
+document.getElementById('textMgrSaveBtn').addEventListener('click', () => {
+  textMgrFields.querySelectorAll('[data-key]').forEach(input => {
+    SITE_TEXTS[input.dataset.key] = input.value;
+  });
+  saveSiteTexts();
+  renderSiteTexts();
+  textMgrPanel.classList.remove('show');
+  alert('文字已保存！记得导出文字清单并运行字体子集化脚本。');
+});
+document.getElementById('textMgrResetBtn').addEventListener('click', () => {
+  if(confirm('确定恢复所有文字为默认值？')){
+    resetSiteTexts();
+    renderSiteTexts();
+    openTextMgr();
+  }
+});
+
+// 导出文字清单
+document.getElementById('exportTextsBtn').addEventListener('click', () => {
+  const texts = exportAllTexts();
+  const blob = new Blob([texts], {type:'text/plain;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'texts.txt';
+  a.click();
+  URL.revokeObjectURL(url);
+  alert('文字清单已导出为 texts.txt，请放到作品集文件夹，然后双击运行"字体子集化.bat"');
 });
 
 // 添加作品
@@ -2229,15 +2502,37 @@ document.getElementById('editCancelBtn').addEventListener('click', () => adminEd
 
 // 导出发布版
 document.getElementById('exportBtn').addEventListener('click', () => {
-  const html = document.documentElement.outerHTML;
-  const worksJson = JSON.stringify(WORKS, null, 2);
-  // 把 IndexedDB 加载逻辑替换为直接内嵌数据，发布版无需数据库
-  let newHtml = html.replace(
-    /let WORKS = DEFAULT_WORKS\.slice\(\);[\s\S]*?const COMPARE_CATS/,
-    `const WORKS = ${worksJson};\nconst COMPARE_CATS`
+  // 1. 临时退出管理模式（隐藏管理栏）
+  const body = document.body;
+  const wasAdmin = body.classList.contains('admin-mode');
+  const adminBar = document.getElementById('adminBar');
+  const adminBarWasShow = adminBar.classList.contains('show');
+  
+  body.classList.remove('admin-mode');
+  adminBar.classList.remove('show');
+  
+  // 2. 抓取当前HTML（此时是纯游客模式）
+  let html = document.documentElement.outerHTML;
+  
+  // 3. 立即恢复管理模式
+  if(wasAdmin) body.classList.add('admin-mode');
+  if(adminBarWasShow) adminBar.classList.add('show');
+  
+  // 4. 把默认数据替换成当前修改后的数据（只替换这两行，其他代码完全不动）
+  const worksData = JSON.stringify(WORKS, null, 2);
+  const textsData = JSON.stringify(SITE_TEXTS, null, 2);
+  
+  html = html.replace(
+    'let WORKS = DEFAULT_WORKS.slice();',
+    'let WORKS = ' + worksData + ';'
   );
-  // 移除管理模式相关（可选，保留也无妨因为需要密码）
-  const blob = new Blob(['<!DOCTYPE html>\n' + newHtml], {type:'text/html;charset=utf-8'});
+  html = html.replace(
+    'let SITE_TEXTS = {...DEFAULT_SITE_TEXTS};',
+    'let SITE_TEXTS = ' + textsData + ';'
+  );
+  
+  // 5. 导出
+  const blob = new Blob(['<!DOCTYPE html>\n' + html], {type:'text/html;charset=utf-8'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'ZHOU作品集-发布版.html';
